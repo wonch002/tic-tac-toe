@@ -1,53 +1,51 @@
 import random
 
-class moves:
+class board:
 
     def __init__(self):
+        # Define the board
         self.row = 0
         self.col = 0
         self.board = [['-','-','-'],['-','-','-'],['-','-','-']]
 
     def get_row(self):
+        # Return the row.
         return self.row
 
     def get_col(self):
+        # Return the column.
         return self.col
 
     def get_board(self):
+        # Return the state of the board.
         return self.board
 
     def set_row_col(self,row,col):
+        # Set the row and column.
         self.row = row
         self.col = col
 
     def valid_move(self):
-        if self.row >=0 and self.row <=2 and self.col>=0 and self.col<=2:
-            if self.board[self.row][self.col] == '-':
-                return True
-            else:
-                return False
+        # Check if a move is valid.
+        if self.row >= 0 and self.row <= 2 and self.col >= 0 and self.col <= 2:
+            return self.board[self.row][self.col] == '-'
 
     def set_move(self,move):
-            self.board[self.row][self.col] = move
+        # Set the current row and column to the move.
+        self.board[self.row][self.col] = move
 
     def print_board(self):
-        counter = 0
-        while counter < 3:
-            i = 0
-            print(self.board[counter][i], self.board[counter][i+1],self.board[counter][i+2])
-            counter = counter + 1
-        print("\n")
+        # Print the state of the board.
+        for row in self.board:
+            print(" ".join(row))
 
     def clear_board(self):
-        counter = 0
-        while counter < 3:
-            i = 0
-            while i < 3:
-                self.board[i][counter] = '-'
-                i += 1
-            counter += 1
+        # Clear the board.
+        for i, row in enumerate(self.board):
+            self.board[i] = ['-']*3
 
     def winner(self):
+        # Check if there is a winner.
         i = 0
         while i <= 2:
             if self.board[0][i] == 'x' and self.board[1][i] == 'x'and self.board[2][i] == 'x':
@@ -77,24 +75,31 @@ class moves:
                 return True
 
     def draw(self):
-        i = 0
-        while i < 3:
-            counter = 0
-            while counter < 3:
-                if self.board[i][counter] == '-':
-                    return False
-                counter +=1
-            i += 1
+        # Check if there is a draw.
+        for row in self.board:
+            if '-' in row:
+                return False
         return True
-
 
 class stats:
     def __init__(self):
+        # Keep track of winning moves and the amount of games each player wins.
         self.moves = {(0,0):0,(0,1):0,(0,2):0,(1,0):0,(1,1):0,(1,2):0,(2,0):0,(2,1):0,(2,2):0}
         self.moves_two = {(0,0):0,(0,1):0,(0,2):0,(1,0):0,(1,1):0,(1,2):0,(2,0):0,(2,1):0,(2,2):0}
+        self.x = 0
+        self.o = 0
+        self.draw = 0
 
+    def update_winner_count(self, move):
+        if move == 'o':
+            self.o += 1
+        elif move == 'x':
+            self.x += 1
+        else:
+            self.draw += 1
 
     def get_stats(self):
+        # Print out useful statistics
         output = ""
         output_two = ""
         counter = 0
@@ -107,6 +112,9 @@ class stats:
             counter = counter + 1
         print("\nStats for move X:\n" + output + "\n")
         print("\nStats for move O:\n" + output_two + "\n")
+        print(f"x won {self.x} times")
+        print(f"o won {self.o} times")
+        print(f"There were {self.draw} draws")
 
     def update(self,board,num,move):
         counter = 0
@@ -173,127 +181,73 @@ def human_move(tictactoe):
     move = input("Please input your move in the form of row,col: ")
     row = int(move[0])
     col = int(move[2])
-    tictactoe.set_row_col(row,col)
+    tictactoe.set_row_col(row, col)
     while tictactoe.valid_move() == False:
         move = input("Invalid move, please input a new move: ")
         row = int(move[0])
         col = int (move[2])
         tictactoe.set_row_col(row,col)
+    return tictactoe
 
+def game_loop(tictactoe, statistics, move, train):
+    move = 'o' # x goes first
+    exit = False
+    i = 0
+    while i <= 10000 and exit == False:
+        # Change the move.
+        if move == 'x':
+            move = 'o'
+        else:
+            move = 'x'
+        # Collect data first if training is True.
+        if train:
+            random_move(tictactoe)
+        # Play a human against against a "smart" computer
+        else:
+            tictactoe.print_board()
+            if move == 'x':
+                print("It is x turn.\n")
+                smart_move(tictactoe,statistics,move)
+            else:
+                print("It is o turn.\n")
+                tictactoe = human_move(tictactoe)
+        tictactoe.set_move(move)
+        if tictactoe.winner() or tictactoe.draw():
+            finish_game(tictactoe, statistics, move)
+            tictactoe.clear_board()
+            move = 'o'
+            if not train:
+                quit = input("Do you want to keep playing? yes/no: ")
+                if quit.lower()[0] == 'n':
+                    exit = True
+
+        i = i + 1
+def finish_game(tictactoe, statistics, move):
+    tictactoe.print_board()
+    if tictactoe.draw():
+        statistics.update_draw(tictactoe.get_board())
+        statistics.update_winner_count('draw')
+        tictactoe.clear_board()
+    elif move == 'x':
+        statistics.update(tictactoe.get_board(),-1,'o')
+        statistics.update_winner_count('x')
+        statistics.update(tictactoe.get_board(),1,'x')
+    else:
+        statistics.update(tictactoe.get_board(),-1,'x')
+        statistics.update_winner_count('o')
+        statistics.update(tictactoe.get_board(),1,'o')
 
 def main():
-    # counters to keep track of wins and draws
-    counterrandx = 0
-    countersmartx = 0
-    counterrando = 0
-    countersmarto = 0
-    counterdrawrand = 0
-    counterdrawsmart = 0
-    i = 0
-    tictactoe = moves()
+    # Instantiate Board and Stats object.
+    tictactoe = board()
     statistics = stats()
-    move = 'o' # x goes first
-    while i <= 10000:
-        if move == 'x':
-            move = 'o'
-        else:
-            move = 'x'
-        random_move(tictactoe)
-        tictactoe.set_move(move)
-        if tictactoe.winner():
-            if move == 'x':
-                statistics.update(tictactoe.get_board(),-1,'o')
-                counterrandx += 1
-                statistics.update(tictactoe.get_board(),1,'x')
-            else:
-                statistics.update(tictactoe.get_board(),-1,'x')
-                counterrando +=1
-                statistics.update(tictactoe.get_board(),1,'o')
-            tictactoe.clear_board()
-            move = 'o'
-        if tictactoe.draw():
-            statistics.update_draw(tictactoe.get_board())
-            counterdrawrand += 1
-            tictactoe.clear_board()
-            move = 'o'
-        i = i + 1
-    i = 0
-    move = 'o'
+    turn = 'o' # x goes first
+    train = True # Train the game first.
+    game_loop(tictactoe, statistics, turn, train)
     tictactoe.clear_board()
-    while i <= 10000:
-        if move == 'x':
-            move = 'o'
-        else:
-            move = 'x'
-        if move == 'x':
-            ### UNCOMMENT FOR SMART X
-            smart_move(tictactoe,statistics,move)
-            ### UNCOMMENT FOR RANDOM X
-            # random_move(tictactoe)
-        else:
-            ### UNCOMMENT FOR SMART O
-            smart_move(tictactoe,statistics,move)
-            ### UNCOMMENT FOR RANDOM O
-            # random_move(tictactoe)
-        tictactoe.set_move(move)
-        if tictactoe.winner():
-            if move == 'x':
-                statistics.update(tictactoe.get_board(),-1,'o')
-                countersmartx += 1
-                statistics.update(tictactoe.get_board(),1,'x')
-            else:
-                statistics.update(tictactoe.get_board(),-1,'x')
-                statistics.update(tictactoe.get_board(),1,'o')
-                countersmarto += 1
-            tictactoe.clear_board()
-            move = 'o'
-        if tictactoe.draw():
-            statistics.update_draw(tictactoe.get_board())
-            counterdrawsmart += 1
-            tictactoe.clear_board()
-            move = 'o'
-        i = i + 1
-    i = 0
-    move = 'o'
-    tictactoe.clear_board()
-    while i <= 10000:
-        if move == 'x':
-            move = 'o'
-        else:
-            move = 'x'
-        if move == 'x':
-            ### UNCOMMENT FOR SMART X
-            smart_move(tictactoe,statistics,move)
-            ### UNCOMMENT FOR RANDOM X
-            # random_move(tictactoe)
-        else:
-            ### UNCOMMENT FOR SMART O
-            human_move(tictactoe)
-            ### UNCOMMENT FOR RANDOM O
-            # random_move(tictactoe)
-        tictactoe.set_move(move)
-        tictactoe.print_board()
-        if tictactoe.winner():
-            if move == 'x':
-                statistics.update(tictactoe.get_board(),-1,'o')
-                countersmartx += 1
-                statistics.update(tictactoe.get_board(),1,'x')
-            else:
-                statistics.update(tictactoe.get_board(),-1,'x')
-                statistics.update(tictactoe.get_board(),1,'o')
-                countersmarto += 1
-            tictactoe.clear_board()
-            move = 'o'
-        if tictactoe.draw():
-            statistics.update_draw(tictactoe.get_board())
-            counterdrawsmart += 1
-            tictactoe.clear_board()
-            move = 'o'
-        i = i + 1
     statistics.get_stats()
-    print("Random wins X: %d\nRandom wins O: %d\nRandom draws: %d\nSmart wins X: %d\nSmart wins O: %d\nSmart draws: %d"%(counterrandx, counterrando, counterdrawrand, countersmartx, countersmarto, counterdrawsmart))
-    total_rand = counterrandx + counterrando + counterdrawrand
-    total_smart = countersmartx + countersmarto + counterdrawsmart
-    print("Total games random: %d\nTotal games smart: %d\n"%(total_rand,total_smart))
+    # Play the game normally.
+    game_loop(tictactoe, statistics, turn, not train)
+
 if __name__ == '__main__':
     main()
