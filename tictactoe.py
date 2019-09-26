@@ -63,9 +63,10 @@ class tictactoe:
                 return True
         elif self.board[0][2] == 'o' and self.board[1][1] == 'o' and self.board[2][0] == 'o':
                 return True
+        return False
 
     def get_available_moves(self):
-        # Return a list of all available moves in the form an array.
+        # Return a list of all available moves in the form a list.
         moves = []
         for i, row in enumerate(self.board):
             for j, col in enumerate(self.board):
@@ -74,6 +75,7 @@ class tictactoe:
         return moves
 
     def board_as_dict(self):
+        # Return the state of the board in the form of a dictionary.
         dict_board = {}
         for i, row in enumerate(self.board):
             for j, col in enumerate(row):
@@ -86,7 +88,7 @@ class tictactoe:
         return dict_board
 
     def draw(self):
-        # Check if there is a draw.
+        # Check if there is a tie.
         for row in self.board:
             if '-' in row:
                 return False

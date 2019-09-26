@@ -11,15 +11,22 @@ connecting three in a row.
 ### What does this program do?
 In this program, I've attempted to teach the computer which moves are
 better than others at certain states in the game. This is done by letting the
-computer randomly play against itself for 10,000 moves. During these iterations,
-the following data is collected and recorded:
+computer randomly play against itself for 10,000 moves (this can be adjusted). During these iterations,
+the following data is collected and recorded into data.csv:
 * The state of the board when a move is made.
 * The move that the player makes.
 * Whether that moves ends up as a Win, Draw, or Loss.
 
-Using the data collected, the computer generates two models:
+Using the data collected, the computer generates several models:
 * DecisionTreeClassifier
 * K-Nearest Neighbors
+* XGBoost
+* Guassian Naive Bayes
+
+These models are pulled from the sklearn library. I selected these models
+because I have learned about them in either class or at work, and I wanted to
+see how they performed on this type of data. Further, I wanted to see how they
+performed against each other.
 
 ### How does it perform?
 Currently, these models do not perform very well. However, the point of this
@@ -41,11 +48,14 @@ The following packages are needed to run this program:
 * numpy
 * pandas
 * sklearn
+* xgboost
 
 After these dependencies are met, execute the following in the terminal:
 
 * `python3 -i run_tictactoe.py`
 
-If you want a better view of all of the functions you can open
-`tictactoe_nb.ipynb` in a Jupyter Notebook. This organizes the files in an easy
-to understand way, and gives a description about each file.
+To see results of each model, and how all of the files work together, navigate
+to [tic-tac-toe](tictactoe_nb.ipynb), which is a Jupyter Notebook that has
+annotations and analysis for all methods and model results. Additionally, two
+sample games are demonstrated for each model to show an example of what kind of
+moves each model makes.
