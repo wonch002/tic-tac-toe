@@ -54,6 +54,8 @@ After these dependencies are met, execute the following in the terminal:
 
 * `python3 -i run_tictactoe.py`
 
+### Results and Analysis
+
 To see results of each model, and how all of the files work together, navigate
 to [tic-tac-toe](tictactoe_nb.ipynb), which is a Jupyter Notebook that has
 annotations and analysis for all methods and model results. Additionally, two
